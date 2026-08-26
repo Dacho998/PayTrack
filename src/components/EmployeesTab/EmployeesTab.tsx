@@ -89,7 +89,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmploy
           />
           <input
             type="number"
-            placeholder="Основна Плата (пр. 46000)"
+            placeholder="Основна Плата"
             value={baseSalary}
             onChange={(e) => setBaseSalary(e.target.value)}
             required

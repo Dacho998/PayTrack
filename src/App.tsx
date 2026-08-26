@@ -7,6 +7,10 @@ import { EmployeesTab } from "./components/EmployeesTab/EmployeesTab";
 import { FreelancersTab } from "./components/freelancersTab/FreelancersTab";
 import { SummaryCards } from "./components/summaryCards/SummaryCards";
 
+// Firebase увоз
+import { db } from "./firebase";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+
 const getWorkingDaysInCurrentMonth = (): number => {
   const now = new Date();
   const year = now.getFullYear();
@@ -25,35 +29,62 @@ const getWorkingDaysInCurrentMonth = (): number => {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>("employees");
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [employees, setEmployees] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem("employees_data");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [freelancers, setFreelancers] = useState<Freelancer[]>(() => {
-    const saved = localStorage.getItem("freelancers_data");
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  // 🔄 Синхронизација со Firebase во реално време
   useEffect(() => {
-    localStorage.setItem("employees_data", JSON.stringify(employees));
-  }, [employees]);
+    const unsubscribe = onSnapshot(doc(db, "paytrack", "data"), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setEmployees(data.employees || []);
+        setFreelancers(data.freelancers || []);
+      }
+      setLoading(false);
+    });
 
-  useEffect(() => {
-    localStorage.setItem("freelancers_data", JSON.stringify(freelancers));
-  }, [freelancers]);
+    return () => unsubscribe();
+  }, []);
+
+  // 💾 Зачувување во база при секоја промена
+  const saveDataToCloud = async (newEmployees: Employee[], newFreelancers: Freelancer[]) => {
+    try {
+      await setDoc(doc(db, "paytrack", "data"), {
+        employees: newEmployees,
+        freelancers: newFreelancers,
+      });
+    } catch (error) {
+      console.error("Грешка при зачувување во Cloud:", error);
+    }
+  };
+
+  const handleSetEmployees = (newEmployees: Employee[] | ((prev: Employee[]) => Employee[])) => {
+    const updated = typeof newEmployees === "function" ? newEmployees(employees) : newEmployees;
+    setEmployees(updated);
+    saveDataToCloud(updated, freelancers);
+  };
+
+  const handleSetFreelancers = (newFreelancers: Freelancer[] | ((prev: Freelancer[]) => Freelancer[])) => {
+    const updated = typeof newFreelancers === "function" ? newFreelancers(freelancers) : newFreelancers;
+    setFreelancers(updated);
+    saveDataToCloud(employees, updated);
+  };
 
   // 🔄 Ресет за Нов Месец
   const handleResetMonth = () => {
     if (window.confirm("Дали сте сигурни дека сакате да ги ресетирате сите денови за новиот месец?")) {
-      setEmployees((prev) => prev.map((e) => ({ ...e, plusDays: 0 })));
-      setFreelancers((prev) => prev.map((f) => ({ ...f, totalDays: 0, isPaid: false })));
+      const resetEmp = employees.map((e) => ({ ...e, plusDays: 0 }));
+      const resetFree = freelancers.map((f) => ({ ...f, totalDays: 0, isPaid: false }));
+      
+      setEmployees(resetEmp);
+      setFreelancers(resetFree);
+      saveDataToCloud(resetEmp, resetFree);
       alert("Деновите се ресетирани!");
     }
   };
 
-  // 📊 Генерирање на Excel документ
+  // 📊 Експорт во Excel
   const handleExportToExcel = () => {
     const workingDays = getWorkingDaysInCurrentMonth();
 
@@ -91,20 +122,21 @@ export default function App() {
     XLSX.writeFile(workbook, fileName);
   };
 
+  if (loading) {
+    return <div style={{ padding: "20px", textAlign: "center" }}>Вчитување на податоци...</div>;
+  }
+
   return (
     <div className="app-container">
-      {/* Навбар горе */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Табела (Зависно од избраниот таб) */}
       {activeTab === "employees" ? (
-        <EmployeesTab employees={employees} setEmployees={setEmployees} />
+        <EmployeesTab employees={employees} setEmployees={handleSetEmployees} />
       ) : (
-        <FreelancersTab freelancers={freelancers} setFreelancers={setFreelancers} />
+        <FreelancersTab freelancers={freelancers} setFreelancers={handleSetFreelancers} />
       )}
 
-      {/* ⬇️ Копчињата поставени под табелата */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "20px" }}>
+      <div className="action-buttons-container" style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "20px" }}>
         <button onClick={handleResetMonth} className="btn-save" style={{ backgroundColor: "#dc3545" }}>
           🔄 Нов Месец
         </button>
@@ -113,7 +145,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* Картички со вкупни суми на дното */}
       <SummaryCards employees={employees} freelancers={freelancers} />
     </div>
   );

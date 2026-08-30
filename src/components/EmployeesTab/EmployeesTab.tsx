@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import type { Employee } from "../../types";
+import { EmployeeForm } from "./EmployeeFrom";
+import { EmployeeRow } from "./EmployeeRow";
 
 interface EmployeesTabProps {
   employees: Employee[];
@@ -22,47 +24,9 @@ const getWorkingDaysInCurrentMonth = (): number => {
   return workingDays;
 };
 
-const formatMoney = (amount: number): string => {
-  return Math.round(amount).toLocaleString('de-DE', { maximumFractionDigits: 0 });
-};
-
 export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmployees }) => {
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [name, setName] = useState<string>("");
-  const [baseSalary, setBaseSalary] = useState<string>("");
-
   const workingDays = getWorkingDaysInCurrentMonth();
-
-  const updateDays = (id: number, delta: number) => {
-    setEmployees((prev) =>
-      prev.map((emp) => (emp.id === id ? { ...emp, plusDays: Math.max(0, emp.plusDays + delta) } : emp))
-    );
-  };
-
-  
-  const handleDelete = (id: number, empName: string) => {
-    if (window.confirm(`Дали сте сигурни дека сакате да го избришете ${empName}?`)) {
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    }
-  };
-
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !baseSalary) return;
-
-    const newEmp: Employee = {
-      id: Date.now(),
-      name,
-      baseSalary: Number(baseSalary),
-      dailyRate: 0,
-      plusDays: 0,
-    };
-
-    setEmployees((prev) => [...prev, newEmp]);
-    setName("");
-    setBaseSalary("");
-    setShowForm(false);
-  };
 
   return (
     <div className="card-panel">
@@ -78,27 +42,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmploy
         </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleAdd} className="form-box">
-          <input
-            type="text"
-            placeholder="Име и Презиме"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            type="number"
-            placeholder="Основна Плата"
-            value={baseSalary}
-            onChange={(e) => setBaseSalary(e.target.value)}
-            required
-          />
-          <button type="submit" className="btn-save">
-            Зачувај
-          </button>
-        </form>
-      )}
+      {showForm && <EmployeeForm setEmployees={setEmployees} onClose={() => setShowForm(false)} />}
 
       <div className="table-responsive">
         <table className="custom-table">
@@ -118,39 +62,14 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmploy
                 <td colSpan={6}>Нема внесено вработени. Кликни "+ Додај Вработен".</td>
               </tr>
             ) : (
-              employees.map((emp) => {
-                const dynamicDailyRate = Math.round(emp.baseSalary / workingDays);
-                const totalExtra = Math.round(emp.plusDays * dynamicDailyRate);
-
-                return (
-                  <tr key={emp.id}>
-                    <td style={{ fontWeight: "bold" }}>👤 {emp.name}</td>
-                    <td>{formatMoney(emp.baseSalary)} ден.</td>
-                    <td style={{ color: "#64748b" }}>
-                      {formatMoney(dynamicDailyRate)} ден.
-                    </td>
-                    <td>
-                      <div className="counter-box">
-                        <button className="btn-counter" onClick={() => updateDays(emp.id, -1)}>-</button>
-                        <span className="counter-value">{emp.plusDays}</span>
-                        <button className="btn-counter" onClick={() => updateDays(emp.id, 1)}>+</button>
-                      </div>
-                    </td>
-                    <td style={{ color: "#007bff", fontWeight: "bold" }}>
-                      +{formatMoney(totalExtra)} ден.
-                    </td>
-                    <td>
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleDelete(emp.id, emp.name)}
-                        title="Избриши"
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
+              employees.map((emp) => (
+                <EmployeeRow
+                  key={emp.id}
+                  employee={emp}
+                  workingDays={workingDays}
+                  setEmployees={setEmployees}
+                />
+              ))
             )}
           </tbody>
         </table>

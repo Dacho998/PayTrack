@@ -4,6 +4,7 @@ export interface Employee {
   baseSalary: number;
   dailyRate: number;
   plusDays: number;
+  note?: string;
 }
 
 export interface Freelancer {
@@ -14,6 +15,7 @@ export interface Freelancer {
   dailyRate: number;
   totalDays: number;
   isPaid: boolean;
+  note?: string;
 }
 
 export type TabType = "employees" | "freelancers";

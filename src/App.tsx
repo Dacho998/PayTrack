@@ -6,8 +6,8 @@ import { Navbar } from "./components/navBar/NavBar";
 import { EmployeesTab } from "./components/EmployeesTab/EmployeesTab";
 import { FreelancersTab } from "./components/freelancersTab/FreelancersTab";
 import { SummaryCards } from "./components/summaryCards/SummaryCards";
+import { useAuth } from "./context/AuthContext";
 
-// Firebase увоз
 import { db } from "./firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 
@@ -28,6 +28,7 @@ const getWorkingDaysInCurrentMonth = (): number => {
 };
 
 export default function App() {
+  const { isAdmin, loginAsAdmin, logoutAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("employees");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
@@ -47,7 +48,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // 💾 Зачувување во база при секоја промена
+  // 💾 Зачувување во база при секоја промена (работи за сите за забелешките)
   const saveDataToCloud = async (newEmployees: Employee[], newFreelancers: Freelancer[]) => {
     try {
       await setDoc(doc(db, "paytrack", "data"), {
@@ -71,12 +72,13 @@ export default function App() {
     saveDataToCloud(employees, updated);
   };
 
-  // 🔄 Ресет за Нов Месец
+  // 🔄 Ресет за Нов Месец (Само за Admin)
   const handleResetMonth = () => {
+    if (!isAdmin) return;
     if (window.confirm("Дали сте сигурни дека сакате да ги ресетирате сите денови за новиот месец?")) {
       const resetEmp = employees.map((e) => ({ ...e, plusDays: 0 }));
       const resetFree = freelancers.map((f) => ({ ...f, totalDays: 0, isPaid: false }));
-      
+
       setEmployees(resetEmp);
       setFreelancers(resetFree);
       saveDataToCloud(resetEmp, resetFree);
@@ -84,7 +86,6 @@ export default function App() {
     }
   };
 
-  // 📊 Експорт во Excel
   const handleExportToExcel = () => {
     const workingDays = getWorkingDaysInCurrentMonth();
 
@@ -93,6 +94,7 @@ export default function App() {
       const bonus = Math.round(emp.plusDays * dailyRate);
       return {
         "Име и Презиме": emp.name,
+        "Забелешка / Пари": emp.note || "-",
         "Основна Плата (ден)": emp.baseSalary,
         "Дневница за Месецот (ден)": dailyRate,
         "Плус Денови": emp.plusDays,
@@ -128,7 +130,23 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <button
+          onClick={isAdmin ? logoutAdmin : loginAsAdmin}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "6px",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: "bold",
+            backgroundColor: isAdmin ? "#dc3545" : "#4f46e5",
+            color: "#fff",
+          }}
+        >
+          {isAdmin ? "🔒 Напушти Админ" : "🔓 Админ Најава"}
+        </button>
+      </div>
 
       {activeTab === "employees" ? (
         <EmployeesTab employees={employees} setEmployees={handleSetEmployees} />
@@ -137,9 +155,11 @@ export default function App() {
       )}
 
       <div className="action-buttons-container" style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "20px" }}>
-        <button onClick={handleResetMonth} className="btn-save" style={{ backgroundColor: "#dc3545" }}>
-          🔄 Нов Месец
-        </button>
+        {isAdmin && (
+          <button onClick={handleResetMonth} className="btn-save" style={{ backgroundColor: "#dc3545" }}>
+            🔄 Нов Месец
+          </button>
+        )}
         <button onClick={handleExportToExcel} className="btn-save" style={{ backgroundColor: "#198754" }}>
           📊 Преземи Excel (.xlsx)
         </button>

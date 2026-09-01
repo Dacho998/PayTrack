@@ -17,6 +17,9 @@ export const FreelancersTab: React.FC<FreelancersTabProps> = ({ freelancers, set
   const [dailyRate, setDailyRate] = useState<string>("");
   const [totalDays, setTotalDays] = useState<string>("");
 
+  // 🔽 СОРТИРАЊЕ: Прво оние што имаат изработени денови (> 0), најдолу оние со 0
+  const sortedFreelancers = [...freelancers].sort((a, b) => b.totalDays - a.totalDays);
+
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !bankAccount) return;
@@ -77,12 +80,12 @@ export const FreelancersTab: React.FC<FreelancersTabProps> = ({ freelancers, set
             </tr>
           </thead>
           <tbody>
-            {freelancers.length === 0 ? (
+            {sortedFreelancers.length === 0 ? (
               <tr>
                 <td colSpan={8}>Нема внесено хонорарци.</td>
               </tr>
             ) : (
-              freelancers.map((f) => (
+              sortedFreelancers.map((f) => (
                 <FreelancerRow
                   key={f.id}
                   freelancer={f}

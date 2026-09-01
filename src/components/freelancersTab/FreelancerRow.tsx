@@ -19,6 +19,10 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
   const [editBankAccount, setEditBankAccount] = useState<string>(f.bankAccount);
   const [editDailyRate, setEditDailyRate] = useState<string>(f.dailyRate.toString());
 
+  // 🔴 Црвена боја за целиот ред ако работените денови се 0
+  const isZero = f.totalDays === 0;
+  const rowColor = isZero ? "#dc3545" : "#1e293b";
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     alert(`Копирана сметка: ${text}`);
@@ -50,8 +54,8 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
   };
 
   return (
-    <tr>
-      <td style={{ fontWeight: "bold" }}>
+    <tr style={{ color: rowColor }}>
+      <td style={{ fontWeight: "bold", color: rowColor }}>
         {isEditing ? (
           <input
             type="text"
@@ -63,7 +67,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           `👤 ${f.name}`
         )}
       </td>
-      <td>
+      <td style={{ color: rowColor }}>
         {isEditing ? (
           <input
             type="text"
@@ -76,7 +80,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           f.embg || "-"
         )}
       </td>
-      <td>
+      <td style={{ color: rowColor }}>
         {isEditing ? (
           <input
             type="text"
@@ -94,7 +98,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           </>
         )}
       </td>
-      <td>
+      <td style={{ color: rowColor }}>
         {isEditing ? (
           <input
             type="number"
@@ -106,7 +110,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           `${Math.round(f.dailyRate).toLocaleString("de-DE")} ден.`
         )}
       </td>
-      <td>
+      <td style={{ color: rowColor }}>
         {/* 🔒 Само Админ може да менува денови */}
         <input
           type="number"
@@ -124,11 +128,14 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
             padding: "4px",
             cursor: isAdmin ? "text" : "not-allowed",
             backgroundColor: isAdmin ? "#fff" : "#f0f0f0",
+            color: rowColor,
+            fontWeight: "bold",
+            border: `1px solid ${isZero ? "#fca5a5" : "#cbd5e1"}`
           }}
         />{" "}
         дена
       </td>
-      <td style={{ color: "#28a745", fontWeight: "bold" }}>
+      <td style={{ color: isZero ? "#dc3545" : "#28a745", fontWeight: "bold" }}>
         {Math.round(f.totalDays * f.dailyRate).toLocaleString("de-DE")} ден.
       </td>
       <td>

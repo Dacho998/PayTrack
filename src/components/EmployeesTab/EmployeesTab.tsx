@@ -6,33 +6,20 @@ import { EmployeeRow } from "./EmployeeRow";
 interface EmployeesTabProps {
   employees: Employee[];
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
+  workingDays?: number; 
 }
 
-const getWorkingDaysInPreviousMonth = (): number => {
-  const now = new Date();
-  
-  // Одиме 1 месец назад (од Септември во Август)
-  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const year = prevMonthDate.getFullYear();
-  const month = prevMonthDate.getMonth();
-  
-  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
-
-  let workingDays = 0;
-  for (let day = 1; day <= totalDaysInMonth; day++) {
-    const dayOfWeek = new Date(year, month, day).getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      workingDays++;
-    }
-  }
-  return workingDays;
-};
-
-export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmployees }) => {
+export const EmployeesTab: React.FC<EmployeesTabProps> = ({
+  employees,
+  setEmployees,
+  workingDays = 22, 
+}) => {
   const [showForm, setShowForm] = useState<boolean>(false);
-  
-  // Го зема бројот на денови од претходниот месец
-  const workingDays = getWorkingDaysInPreviousMonth();
+
+  const safeWorkingDays = workingDays && !isNaN(workingDays) && workingDays > 0 ? workingDays : 22;
+
+  // 🔽 СОРТИРАЊЕ: Прво оние што имаат плус денови (> 0), најдолу оние со 0
+  const sortedEmployees = [...employees].sort((a, b) => b.plusDays - a.plusDays);
 
   return (
     <div className="card-panel">
@@ -40,7 +27,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmploy
         <div>
           <h3>👤 Табела за Редовно Вработени</h3>
           <small style={{ color: "#64748b" }}>
-            📅 Претходниот месец имаше <strong>{workingDays} работни денови</strong> (пон - пет)
+            📅 Избраниот месец има <strong>{safeWorkingDays} работни денови</strong> (пон - пет)
           </small>
         </div>
         <button onClick={() => setShowForm(!showForm)} className="btn-add">
@@ -63,16 +50,16 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmploy
             </tr>
           </thead>
           <tbody>
-            {employees.length === 0 ? (
+            {sortedEmployees.length === 0 ? (
               <tr>
                 <td colSpan={6}>Нема внесено вработени. Кликни "+ Додај Вработен".</td>
               </tr>
             ) : (
-              employees.map((emp) => (
+              sortedEmployees.map((emp) => (
                 <EmployeeRow
                   key={emp.id}
                   employee={emp}
-                  workingDays={workingDays}
+                  workingDays={safeWorkingDays}
                   setEmployees={setEmployees}
                 />
               ))

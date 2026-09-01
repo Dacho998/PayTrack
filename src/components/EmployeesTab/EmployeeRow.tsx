@@ -25,6 +25,10 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
   const dynamicDailyRate = Math.round(emp.baseSalary / workingDays);
   const totalExtra = Math.round(emp.plusDays * dynamicDailyRate);
 
+  // 🔴 Црвена боја за целиот ред ако плус деновите се 0
+  const isZero = emp.plusDays === 0;
+  const rowColor = isZero ? "#dc3545" : "#1e293b";
+
   // 📝 Забелешката ја менуваат СИТЕ КОРИСНИЦИ директно
   const handleNoteChange = (newNote: string) => {
     setEmployees((prev) =>
@@ -64,7 +68,7 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
   };
 
   return (
-    <tr>
+    <tr style={{ color: rowColor }}>
       <td style={{ verticalAlign: "top" }}>
         {isAdmin && isEditing ? (
           <input
@@ -74,7 +78,9 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
             style={{ padding: "4px", width: "100%", fontWeight: "bold", marginBottom: "4px" }}
           />
         ) : (
-          <div style={{ fontWeight: "bold", marginBottom: "4px" }}>👤 {emp.name}</div>
+          <div style={{ fontWeight: "bold", marginBottom: "4px", color: rowColor }}>
+            👤 {emp.name}
+          </div>
         )}
 
         {/* 📝 Директно поле за забелешка - отворено за сите */}
@@ -89,7 +95,7 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
               width: "100%",
               fontSize: "0.82rem",
               padding: "2px 6px",
-              border: "1px solid #cbd5e1",
+              border: `1px solid ${isZero ? "#fca5a5" : "#cbd5e1"}`,
               borderRadius: "4px",
               backgroundColor: emp.note ? "#f8fafc" : "#fff",
               color: "#334155",
@@ -98,7 +104,7 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
         </div>
       </td>
 
-      <td>
+      <td style={{ color: rowColor }}>
         {isAdmin && isEditing ? (
           <input
             type="number"
@@ -111,7 +117,9 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
         )}
       </td>
 
-      <td style={{ color: "#64748b" }}>{formatMoney(dynamicDailyRate)} ден.</td>
+      <td style={{ color: isZero ? "#dc3545" : "#64748b" }}>
+        {formatMoney(dynamicDailyRate)} ден.
+      </td>
 
       <td>
         <div className="counter-box">
@@ -120,7 +128,9 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
               -
             </button>
           )}
-          <span className="counter-value">{emp.plusDays}</span>
+          <span className="counter-value" style={{ color: rowColor, fontWeight: "bold" }}>
+            {emp.plusDays}
+          </span>
           {isAdmin && (
             <button className="btn-counter" onClick={() => updateDays(1)}>
               +
@@ -129,7 +139,9 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
         </div>
       </td>
 
-      <td style={{ color: "#007bff", fontWeight: "bold" }}>+{formatMoney(totalExtra)} ден.</td>
+      <td style={{ color: isZero ? "#dc3545" : "#10b981", fontWeight: "bold" }}>
+        +{formatMoney(totalExtra)} ден.
+      </td>
 
       {isAdmin && (
         <td>

@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
-import * as XLSX from "xlsx";
-import "./styles.css";
-import type { Employee, Freelancer, TabType } from "./types";
-import { Navbar } from "./components/navBar/NavBar";
+import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
+import { useAuth } from "./context/AuthContext";
 import { EmployeesTab } from "./components/EmployeesTab/EmployeesTab";
 import { FreelancersTab } from "./components/freelancersTab/FreelancersTab";
+import { Navbar } from "./components/navBar/NavBar";
 import { SummaryCards } from "./components/summaryCards/SummaryCards";
-import { useAuth } from "./context/AuthContext";
+import * as XLSX from "xlsx";
+import type { Employee, Freelancer, TabType } from "./types";
 
-import { db } from "./firebase";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
-
+// 📅 Функција за пресметка на работни денови (Пон - Пет) за тековниот месец
 const getWorkingDaysInCurrentMonth = (): number => {
   const now = new Date();
   const year = now.getFullYear();
@@ -32,6 +31,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>("employees");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
+  const [workingDays, setWorkingDays] = useState<number>(22); 
   const [loading, setLoading] = useState(true);
 
   // 🔄 Синхронизација со Firebase во реално време
@@ -41,6 +41,9 @@ export default function App() {
         const data = docSnap.data();
         setEmployees(data.employees || []);
         setFreelancers(data.freelancers || []);
+        if (data.workingDays) {
+          setWorkingDays(data.workingDays); // Ги вчитуваме зачуваните работни денови од база
+        }
       }
       setLoading(false);
     });
@@ -48,12 +51,17 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // 💾 Зачувување во база при секоја промена (работи за сите за забелешките)
-  const saveDataToCloud = async (newEmployees: Employee[], newFreelancers: Freelancer[]) => {
+  // 💾 Зачувување во Cloud (вклучувајќи ги и workingDays)
+  const saveDataToCloud = async (
+    newEmployees: Employee[], 
+    newFreelancers: Freelancer[], 
+    days: number = workingDays
+  ) => {
     try {
       await setDoc(doc(db, "paytrack", "data"), {
         employees: newEmployees,
         freelancers: newFreelancers,
+        workingDays: days,
       });
     } catch (error) {
       console.error("Грешка при зачувување во Cloud:", error);
@@ -72,23 +80,25 @@ export default function App() {
     saveDataToCloud(employees, updated);
   };
 
-  // 🔄 Ресет за Нов Месец (Само за Admin)
+  // 🔄 Ресет за Нов Месец (Тогаш се пресметуваат новите работни денови за тековниот месец)
   const handleResetMonth = () => {
     if (!isAdmin) return;
-    if (window.confirm("Дали сте сигурни дека сакате да ги ресетирате сите денови за новиот месец?")) {
+    if (window.confirm("Дали сте сигурни дека сакате да започнете нов месец? Сите денови ќе се ресетираат и ќе се пресметаат новите работни денови.")) {
+      const newWorkingDays = getWorkingDaysInCurrentMonth(); // 👈 Пресметка на деновите за тековниот месец
       const resetEmp = employees.map((e) => ({ ...e, plusDays: 0 }));
       const resetFree = freelancers.map((f) => ({ ...f, totalDays: 0, isPaid: false }));
 
       setEmployees(resetEmp);
       setFreelancers(resetFree);
-      saveDataToCloud(resetEmp, resetFree);
-      alert("Деновите се ресетирани!");
+      setWorkingDays(newWorkingDays);
+
+      // Зачувај сѐ во Firebase
+      saveDataToCloud(resetEmp, resetFree, newWorkingDays);
+      alert(`Новиот месец е започнат! Избрани се ${newWorkingDays} работни денови.`);
     }
   };
 
   const handleExportToExcel = () => {
-    const workingDays = getWorkingDaysInCurrentMonth();
-
     const employeesData = employees.map((emp) => {
       const dailyRate = Math.round(emp.baseSalary / workingDays);
       const bonus = Math.round(emp.plusDays * dailyRate);
@@ -149,7 +159,11 @@ export default function App() {
       </div>
 
       {activeTab === "employees" ? (
-        <EmployeesTab employees={employees} setEmployees={handleSetEmployees} />
+        <EmployeesTab 
+          employees={employees} 
+          setEmployees={handleSetEmployees} 
+          workingDays={workingDays} 
+        />
       ) : (
         <FreelancersTab freelancers={freelancers} setFreelancers={handleSetFreelancers} />
       )}

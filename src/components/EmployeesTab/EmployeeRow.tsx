@@ -25,18 +25,15 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
   const dynamicDailyRate = Math.round(emp.baseSalary / workingDays);
   const totalExtra = Math.round(emp.plusDays * dynamicDailyRate);
 
-  // 🔴 Црвена боја за целиот ред ако плус деновите се 0
   const isZero = emp.plusDays === 0;
   const rowColor = isZero ? "#dc3545" : "#1e293b";
 
-  // 📝 Забелешката ја менуваат СИТЕ КОРИСНИЦИ директно
   const handleNoteChange = (newNote: string) => {
     setEmployees((prev) =>
       prev.map((item) => (item.id === emp.id ? { ...item, note: newNote } : item))
     );
   };
 
-  // ➕/➖ Само АДМИН може да променува плус денови
   const updateDays = (delta: number) => {
     if (!isAdmin) return;
     setEmployees((prev) =>
@@ -83,7 +80,6 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
           </div>
         )}
 
-        {/* 📝 Директно поле за забелешка - отворено за сите */}
         <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
           <span style={{ fontSize: "0.8rem" }}>📝</span>
           <input

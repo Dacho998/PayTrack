@@ -23,6 +23,16 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
   const isZero = f.totalDays === 0;
   const rowColor = isZero ? "#dc3545" : "#1e293b";
 
+  // ➕/➖ Само АДМИН може да менува работени денови
+  const updateDays = (delta: number) => {
+    if (!isAdmin) return;
+    setFreelancers((prev) =>
+      prev.map((item) =>
+        item.id === f.id ? { ...item, totalDays: Math.max(0, item.totalDays + delta) } : item
+      )
+    );
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     alert(`Копирана сметка: ${text}`);
@@ -110,31 +120,26 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           `${Math.round(f.dailyRate).toLocaleString("de-DE")} ден.`
         )}
       </td>
-      <td style={{ color: rowColor }}>
-        {/* 🔒 Само Админ може да менува денови */}
-        <input
-          type="number"
-          value={f.totalDays}
-          disabled={!isAdmin}
-          onChange={(e) => {
-            const val = Math.max(0, Number(e.target.value));
-            setFreelancers((prev) =>
-              prev.map((item) => (item.id === f.id ? { ...item, totalDays: val } : item))
-            );
-          }}
-          style={{
-            width: "50px",
-            textAlign: "center",
-            padding: "4px",
-            cursor: isAdmin ? "text" : "not-allowed",
-            backgroundColor: isAdmin ? "#fff" : "#f0f0f0",
-            color: rowColor,
-            fontWeight: "bold",
-            border: `1px solid ${isZero ? "#fca5a5" : "#cbd5e1"}`
-          }}
-        />{" "}
-        дена
+
+      {/* ➖ / ➕ КОПЧИЊА ЗА ДОДАВАЊЕ ДЕНОВИ (како во Employees) */}
+      <td>
+        <div className="counter-box">
+          {isAdmin && (
+            <button className="btn-counter" onClick={() => updateDays(-1)}>
+              -
+            </button>
+          )}
+          <span className="counter-value" style={{ color: rowColor, fontWeight: "bold" }}>
+            {f.totalDays}
+          </span>
+          {isAdmin && (
+            <button className="btn-counter" onClick={() => updateDays(1)}>
+              +
+            </button>
+          )}
+        </div>
       </td>
+
       <td style={{ color: isZero ? "#dc3545" : "#28a745", fontWeight: "bold" }}>
         {Math.round(f.totalDays * f.dailyRate).toLocaleString("de-DE")} ден.
       </td>

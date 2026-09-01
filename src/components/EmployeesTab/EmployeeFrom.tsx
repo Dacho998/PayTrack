@@ -21,7 +21,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({ setEmployees, onClos
       baseSalary: Number(baseSalary),
       dailyRate: 0,
       plusDays: 0,
-      note, // 👈 Зачувување на забелешката
+      note, 
     };
 
     setEmployees((prev) => [...prev, newEmp]);

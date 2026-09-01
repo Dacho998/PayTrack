@@ -18,7 +18,6 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({
 
   const safeWorkingDays = workingDays && !isNaN(workingDays) && workingDays > 0 ? workingDays : 22;
 
-  // 🔽 СОРТИРАЊЕ: Прво оние што имаат плус денови (> 0), најдолу оние со 0
   const sortedEmployees = [...employees].sort((a, b) => b.plusDays - a.plusDays);
 
   return (

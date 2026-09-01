@@ -8,10 +8,14 @@ interface EmployeesTabProps {
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
 }
 
-const getWorkingDaysInCurrentMonth = (): number => {
+const getWorkingDaysInPreviousMonth = (): number => {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  
+  // Одиме 1 месец назад (од Септември во Август)
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const year = prevMonthDate.getFullYear();
+  const month = prevMonthDate.getMonth();
+  
   const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
 
   let workingDays = 0;
@@ -26,7 +30,9 @@ const getWorkingDaysInCurrentMonth = (): number => {
 
 export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmployees }) => {
   const [showForm, setShowForm] = useState<boolean>(false);
-  const workingDays = getWorkingDaysInCurrentMonth();
+  
+  // Го зема бројот на денови од претходниот месец
+  const workingDays = getWorkingDaysInPreviousMonth();
 
   return (
     <div className="card-panel">
@@ -34,7 +40,7 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({ employees, setEmploy
         <div>
           <h3>👤 Табела за Редовно Вработени</h3>
           <small style={{ color: "#64748b" }}>
-            📅 Овој месец има <strong>{workingDays} работни денови</strong> (пон - пет)
+            📅 Претходниот месец имаше <strong>{workingDays} работни денови</strong> (пон - пет)
           </small>
         </div>
         <button onClick={() => setShowForm(!showForm)} className="btn-add">

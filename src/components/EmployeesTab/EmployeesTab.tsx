@@ -18,7 +18,9 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({
 
   const safeWorkingDays = workingDays && !isNaN(workingDays) && workingDays > 0 ? workingDays : 22;
 
-  const sortedEmployees = [...employees].sort((a, b) => b.plusDays - a.plusDays);
+  const sortedEmployees = [...employees].sort(
+    (a, b) => Number(a.plusDays === 0) - Number(b.plusDays === 0)
+  );
 
   return (
     <div className="card-panel">
@@ -36,7 +38,13 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({
 
       {showForm && <EmployeeForm setEmployees={setEmployees} onClose={() => setShowForm(false)} />}
 
-      <div className="table-responsive">
+      <p className="table-scroll-hint" aria-hidden="true">↔ Лизгајте хоризонтално за повеќе колони</p>
+      <div
+        className="table-responsive table-responsive--employees"
+        role="region"
+        aria-label="Табела за редовно вработени"
+        tabIndex={0}
+      >
         <table className="custom-table">
           <thead>
             <tr>

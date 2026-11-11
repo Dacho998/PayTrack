@@ -17,8 +17,9 @@ export const FreelancersTab: React.FC<FreelancersTabProps> = ({ freelancers, set
   const [dailyRate, setDailyRate] = useState<string>("");
   const [totalDays, setTotalDays] = useState<string>("");
 
-  // 🔽 СОРТИРАЊЕ: Прво оние што имаат изработени денови (> 0), најдолу оние со 0
-  const sortedFreelancers = [...freelancers].sort((a, b) => b.totalDays - a.totalDays);
+  const sortedFreelancers = [...freelancers].sort(
+    (a, b) => Number(a.totalDays === 0) - Number(b.totalDays === 0)
+  );
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +66,13 @@ export const FreelancersTab: React.FC<FreelancersTabProps> = ({ freelancers, set
         </form>
       )}
 
-      <div className="table-responsive">
+      <p className="table-scroll-hint" aria-hidden="true">↔ Лизгајте хоризонтално за повеќе колони</p>
+      <div
+        className="table-responsive table-responsive--freelancers"
+        role="region"
+        aria-label="Табела за хонорарци и испомош"
+        tabIndex={0}
+      >
         <table className="custom-table">
           <thead>
             <tr>

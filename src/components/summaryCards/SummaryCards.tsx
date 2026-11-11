@@ -4,27 +4,10 @@ import type { Employee, Freelancer } from "../../types";
 interface SummaryCardsProps {
   employees: Employee[];
   freelancers: Freelancer[];
+  workingDays: number;
 }
 
-const getWorkingDaysInCurrentMonth = (): number => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
-
-  let workingDays = 0;
-  for (let day = 1; day <= totalDaysInMonth; day++) {
-    const dayOfWeek = new Date(year, month, day).getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      workingDays++;
-    }
-  }
-  return workingDays;
-};
-
-export const SummaryCards: React.FC<SummaryCardsProps> = ({ employees, freelancers }) => {
-  const workingDays = getWorkingDaysInCurrentMonth();
-
+export const SummaryCards: React.FC<SummaryCardsProps> = ({ employees, freelancers, workingDays }) => {
   const totalEmployeeAdditions = employees.reduce((sum, e) => {
     const dynamicDailyRate = Math.round(e.baseSalary / workingDays);
     return sum + e.plusDays * dynamicDailyRate;
@@ -36,19 +19,33 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ employees, freelance
   );
 
   return (
-    <div className="summary-grid">
-      <div className="summary-card card-green">
-        <small>Вкупно Додатоци (+ Денови)</small>
-        <h3>+{totalEmployeeAdditions.toLocaleString()} ден.</h3>
+    <section className="financial-overview">
+      <div className="overview-heading">
+        <div>
+          <span className="eyebrow">ОВОЈ ПЕРИОД</span>
+          <h2>Финансиски преглед</h2>
+        </div>
+        <span className="overview-count">
+          {employees.length} вработени <span aria-hidden="true">·</span> {freelancers.length} хонорарци
+        </span>
       </div>
-      <div className="summary-card card-yellow">
-        <small>Вкупно за Хонорарци</small>
-        <h3>{totalFreelancerCost.toLocaleString()} ден.</h3>
+      <div className="summary-grid">
+        <div className="summary-card card-green">
+          <small>Додатоци за вработени</small>
+          <small>{workingDays} работни денови</small>
+          <h3>+{totalEmployeeAdditions.toLocaleString()} <span>ден.</span></h3>
+        </div>
+        <div className="summary-card card-yellow">
+          <small>Исплати за хонорарци</small>
+          <small>{freelancers.length} лица</small>
+          <h3>{totalFreelancerCost.toLocaleString()} <span>ден.</span></h3>
+        </div>
+        <div className="summary-card card-teal">
+          <small>Вкупен трошок</small>
+          <small>Вработени + хонорарци</small>
+          <h3>{(totalEmployeeAdditions + totalFreelancerCost).toLocaleString()} <span>ден.</span></h3>
+        </div>
       </div>
-      <div className="summary-card card-teal">
-        <small>ВКУПЕН ТРОШОК</small>
-        <h3>{(totalEmployeeAdditions + totalFreelancerCost).toLocaleString()} ден.</h3>
-      </div>
-    </div>
+    </section>
   );
 };

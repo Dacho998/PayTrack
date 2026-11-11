@@ -31,7 +31,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>("employees");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
-  const [workingDays, setWorkingDays] = useState<number>(22); 
+  const [workingDays, setWorkingDays] = useState<number>(getWorkingDaysInCurrentMonth());
   const [loading, setLoading] = useState(true);
 
   // 🔄 Синхронизација со Firebase во реално време
@@ -41,7 +41,7 @@ export default function App() {
         const data = docSnap.data();
         setEmployees(data.employees || []);
         setFreelancers(data.freelancers || []);
-        if (data.workingDays) {
+        if (Number.isFinite(data.workingDays) && data.workingDays > 0) {
           setWorkingDays(data.workingDays); // Ги вчитуваме зачуваните работни денови од база
         }
       }
@@ -140,23 +140,24 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+      <div className="app-header">
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
         <button
           onClick={isAdmin ? logoutAdmin : loginAsAdmin}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "6px",
-            border: "none",
-            cursor: "pointer",
-            fontWeight: "bold",
-            backgroundColor: isAdmin ? "#dc3545" : "#4f46e5",
-            color: "#fff",
-          }}
+          className={`admin-toggle ${isAdmin ? "is-admin" : ""}`}
         >
           {isAdmin ? "🔒 Напушти Админ" : "🔓 Админ Најава"}
         </button>
       </div>
+
+      <section className="dashboard-intro">
+        <div>
+          <span className="eyebrow">PAYROLL OVERVIEW</span>
+          <h2>Преглед на исплати</h2>
+          <p>Вработени, работни денови и исплати — прегледно на едно место.</p>
+        </div>
+        <div className="intro-seal" aria-hidden="true">PT</div>
+      </section>
 
       {activeTab === "employees" ? (
         <EmployeesTab 
@@ -168,18 +169,18 @@ export default function App() {
         <FreelancersTab freelancers={freelancers} setFreelancers={handleSetFreelancers} />
       )}
 
-      <div className="action-buttons-container" style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "20px" }}>
+      <div className="action-buttons-container">
         {isAdmin && (
-          <button onClick={handleResetMonth} className="btn-save" style={{ backgroundColor: "#dc3545" }}>
+          <button onClick={handleResetMonth} className="btn-save btn-danger">
             🔄 Нов Месец
           </button>
         )}
-        <button onClick={handleExportToExcel} className="btn-save" style={{ backgroundColor: "#198754" }}>
+        <button onClick={handleExportToExcel} className="btn-save btn-export">
           📊 Преземи Excel (.xlsx)
         </button>
       </div>
 
-      <SummaryCards employees={employees} freelancers={freelancers} />
+      <SummaryCards employees={employees} freelancers={freelancers} workingDays={workingDays} />
     </div>
   );
 }

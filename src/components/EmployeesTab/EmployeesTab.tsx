@@ -38,7 +38,6 @@ export const EmployeesTab: React.FC<EmployeesTabProps> = ({
 
       {showForm && <EmployeeForm setEmployees={setEmployees} onClose={() => setShowForm(false)} />}
 
-      <p className="table-scroll-hint" aria-hidden="true">↔ Лизгајте хоризонтално за повеќе колони</p>
       <div
         className="table-responsive table-responsive--employees"
         role="region"

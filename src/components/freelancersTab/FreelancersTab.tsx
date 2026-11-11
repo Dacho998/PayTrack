@@ -66,7 +66,6 @@ export const FreelancersTab: React.FC<FreelancersTabProps> = ({ freelancers, set
         </form>
       )}
 
-      <p className="table-scroll-hint" aria-hidden="true">↔ Лизгајте хоризонтално за повеќе колони</p>
       <div
         className="table-responsive table-responsive--freelancers"
         role="region"

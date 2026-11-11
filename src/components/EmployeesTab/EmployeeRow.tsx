@@ -66,7 +66,7 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
 
   return (
     <tr style={{ color: rowColor }}>
-      <td style={{ verticalAlign: "top" }}>
+      <td data-label="Вработен" style={{ verticalAlign: "top" }}>
         {isAdmin && isEditing ? (
           <input
             type="text"
@@ -100,7 +100,7 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
         </div>
       </td>
 
-      <td style={{ color: rowColor }}>
+      <td data-label="Основна плата" style={{ color: rowColor }}>
         {isAdmin && isEditing ? (
           <input
             type="number"
@@ -113,14 +113,18 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
         )}
       </td>
 
-      <td style={{ color: isZero ? "#dc3545" : "#64748b" }}>
+      <td data-label="Дневница" style={{ color: isZero ? "#dc3545" : "#64748b" }}>
         {formatMoney(dynamicDailyRate)} ден.
       </td>
 
-      <td>
+      <td data-label="Плус работни денови">
         <div className="counter-box">
           {isAdmin && (
-            <button className="btn-counter" onClick={() => updateDays(-1)}>
+            <button
+              className="btn-counter"
+              onClick={() => updateDays(-1)}
+              aria-label={`Одземи еден работен ден за ${emp.name}`}
+            >
               -
             </button>
           )}
@@ -128,19 +132,24 @@ export const EmployeeRow: React.FC<EmployeeRowProps> = ({
             {emp.plusDays}
           </span>
           {isAdmin && (
-            <button className="btn-counter" onClick={() => updateDays(1)}>
+            <button
+              className="btn-counter"
+              onClick={() => updateDays(1)}
+              aria-label={`Додај еден работен ден за ${emp.name}`}
+            >
               +
             </button>
           )}
+          {!isAdmin && <span className="mobile-admin-hint">Најавете се како администратор за промена</span>}
         </div>
       </td>
 
-      <td style={{ color: isZero ? "#dc3545" : "#10b981", fontWeight: "bold" }}>
+      <td data-label="Вкупен додаток" style={{ color: isZero ? "#dc3545" : "#10b981", fontWeight: "bold" }}>
         +{formatMoney(totalExtra)} ден.
       </td>
 
       {isAdmin && (
-        <td>
+        <td data-label="Акција">
           {isEditing ? (
             <div style={{ display: "flex", gap: "4px" }}>
               <button onClick={saveEdit} className="btn-save" style={{ padding: "4px 8px" }}>

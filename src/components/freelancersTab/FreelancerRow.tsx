@@ -65,7 +65,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
 
   return (
     <tr style={{ color: rowColor }}>
-      <td style={{ fontWeight: "bold", color: rowColor }}>
+      <td data-label="Хонорарец" style={{ fontWeight: "bold", color: rowColor }}>
         {isEditing ? (
           <input
             type="text"
@@ -77,7 +77,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           `👤 ${f.name}`
         )}
       </td>
-      <td style={{ color: rowColor }}>
+      <td data-label="ЕМБГ" style={{ color: rowColor }}>
         {isEditing ? (
           <input
             type="text"
@@ -90,7 +90,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           f.embg || "-"
         )}
       </td>
-      <td style={{ color: rowColor }}>
+      <td data-label="Трансакциска сметка" style={{ color: rowColor }}>
         {isEditing ? (
           <input
             type="text"
@@ -108,7 +108,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           </>
         )}
       </td>
-      <td style={{ color: rowColor }}>
+      <td data-label="Дневница" style={{ color: rowColor }}>
         {isEditing ? (
           <input
             type="number"
@@ -122,10 +122,14 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
       </td>
 
       {/* ➖ / ➕ КОПЧИЊА ЗА ДОДАВАЊЕ ДЕНОВИ (како во Employees) */}
-      <td>
+      <td data-label="Работни денови">
         <div className="counter-box">
           {isAdmin && (
-            <button className="btn-counter" onClick={() => updateDays(-1)}>
+            <button
+              className="btn-counter"
+              onClick={() => updateDays(-1)}
+              aria-label={`Одземи еден работен ден за ${f.name}`}
+            >
               -
             </button>
           )}
@@ -133,17 +137,22 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
             {f.totalDays}
           </span>
           {isAdmin && (
-            <button className="btn-counter" onClick={() => updateDays(1)}>
+            <button
+              className="btn-counter"
+              onClick={() => updateDays(1)}
+              aria-label={`Додај еден работен ден за ${f.name}`}
+            >
               +
             </button>
           )}
+          {!isAdmin && <span className="mobile-admin-hint">Најавете се како администратор за промена</span>}
         </div>
       </td>
 
-      <td style={{ color: isZero ? "#dc3545" : "#28a745", fontWeight: "bold" }}>
+      <td data-label="За исплата" style={{ color: isZero ? "#dc3545" : "#28a745", fontWeight: "bold" }}>
         {Math.round(f.totalDays * f.dailyRate).toLocaleString("de-DE")} ден.
       </td>
-      <td>
+      <td data-label="Статус">
         {/* ✅ Достапно за сите да кликнат и сменат статус */}
         <button
           onClick={() => {
@@ -158,7 +167,7 @@ export const FreelancerRow: React.FC<FreelancerRowProps> = ({
           {f.isPaid ? "✔ Исплатено" : "✖ Во чекање"}
         </button>
       </td>
-      <td>
+      <td data-label="Акција">
         {/* 🔒 Само Админ ги гледа опциите за уредување/бришење */}
         {isAdmin ? (
           isEditing ? (

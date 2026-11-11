@@ -390,6 +390,10 @@ input:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.mobile-admin-hint {
+  display: none;
+}
+
 .table-responsive {
   overflow-x: auto;
   border: 1px solid var(--line);
@@ -821,54 +825,148 @@ input:focus-visible {
   }
 
   .table-scroll-hint {
-    display: block;
-    margin: -4px 0 8px;
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.4;
+    display: none;
   }
 
   .table-responsive {
-    border-radius: 12px;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
   }
 
-  .custom-table th,
-  .custom-table td {
-    padding: 11px 12px;
-    white-space: nowrap;
+  .custom-table,
+  .custom-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .table-responsive--employees .custom-table,
+  .table-responsive--freelancers .custom-table {
+    min-width: 0;
   }
 
   .custom-table th {
-    font-size: 10px;
+    display: none;
   }
 
-  .custom-table th:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 2;
+  .custom-table tbody {
+    display: grid;
+    gap: 12px;
   }
 
-  .custom-table td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 1;
+  .custom-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
     background: var(--surface);
-    box-shadow: 5px 0 8px -8px rgba(37, 43, 53, 0.55);
+    box-shadow: 0 5px 16px rgba(48, 40, 27, 0.045);
   }
 
-  .table-responsive--employees .custom-table th:first-child,
-  .table-responsive--employees .custom-table td:first-child {
-    min-width: 250px;
+  .custom-table tbody tr td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    font-size: 13px;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
-  .table-responsive--freelancers .custom-table th:first-child,
-  .table-responsive--freelancers .custom-table td:first-child {
-    min-width: 180px;
+  .custom-table tbody tr td::before {
+    color: var(--muted);
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .table-responsive--employees .custom-table tbody tr td:first-child,
+  .table-responsive--freelancers .custom-table tbody tr td:first-child {
+    grid-column: 1 / -1;
+    min-width: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table-responsive--employees .custom-table tbody tr td:nth-child(4),
+  .table-responsive--freelancers .custom-table tbody tr td:nth-child(5) {
+    grid-column: 1 / -1;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #e8e0d2;
+    border-radius: 12px;
+    background: #f8f5ee;
+  }
+
+  .table-responsive--employees .custom-table tbody tr td:nth-child(4)::before,
+  .table-responsive--freelancers .custom-table tbody tr td:nth-child(5)::before {
+    color: #806b48;
+    font-size: 11px;
+  }
+
+  .custom-table tbody tr td[colspan] {
+    grid-column: 1 / -1;
+    align-items: center;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .custom-table tbody tr td[colspan]::before {
+    content: none;
+  }
+
+  .counter-box {
+    gap: 18px;
   }
 
   .btn-counter {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 23px;
+  }
+
+  .counter-value {
+    min-width: 30px;
+    font-size: 19px;
+    text-align: center;
+  }
+
+  .mobile-admin-hint {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .custom-table tbody tr td input {
+    width: 100% !important;
+    min-height: 44px;
+  }
+
+  .custom-table tbody tr td .btn-copy {
+    margin: 4px 0 0;
+    white-space: nowrap;
+  }
+
+  .custom-table tbody tr td .status-badge {
+    white-space: normal;
+  }
+
+  .custom-table tbody tr td:last-child > div {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .btn-copy,
